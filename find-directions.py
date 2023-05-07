@@ -14,53 +14,66 @@ import math
 # 8 = base of tail (magenta)
 # 9 = tip of tail (turqoise)
 
+# frame 0 of numpy array corresponds to what time in what video:
+# 015-01 // frame 0 = 2:47m or 167s
+# 083-01 // frame 0 = 0:43 or 43s
 
-# VARIABLES (TIMES IN SECONDS FROM START OF VIDEO)                              UNCLEAR HERE REVISE TO ALIGN WITH VIDEO!!!!
+
+# Variables (add array_relation_constant (time in seconds into the video when array frame 0 starts (look up in table above)) // add timewindow in seconds from start of video of specific segment)
 
 frame_rate = 30
-start_time = 1
-end_time = 2
+array_relation_constant = 167
+start_time = 370
+end_time = 371
+
+# Convert start/end time of segment to start of array frames
+
+start_frame = int((start_time - array_relation_constant) * frame_rate)
+end_frame = int((end_time - array_relation_constant) * frame_rate)
 
 
-# LOAD DATASET & MAKE SUBSET
+# Load array and extract neck and tail keypoints of frames of interest
 
 postures = np.load('posture_data_utms/observation015-postures.npy')
 
-
-start_frame = int(start_time * frame_rate)
-end_frame = int(end_time * frame_rate)
-
-
-
-# Extract tail and neck points for all animals in the 10th frame
-tail_points = postures[:, start_frame:end_frame, 8]
 neck_points = postures[:, start_frame:end_frame, 3]
+tail_points = postures[:, start_frame:end_frame, 8]
 
 
+# Create function to calculate all orientation angles relative to true north of all animals in specific segment 
 
 def angle_from_north(tail, neck):
 
-    # Calculate the differences in Easting and Northing
+    # Calculate differences in easting and northing of neck and tail
+
     delta_easting = neck[0] - tail[0]
     delta_northing = neck[1] - tail[1]
 
-    # Calculate the angle of the vector between the tail and neck points
+
+    # Calculate angle of the vector between tail and neck points relative to east
+
     angle_rad = math.atan2(delta_northing, delta_easting)
 
-    # Convert the angle from radians to degrees
+
+    # Convert angle from radians to degrees
+
     angle_deg = math.degrees(angle_rad)
 
-    # Convert the angle relative to East direction to an angle relative to North direction
+
+    # Convert angle relative to east to angle relative to north
+
     angle_from_north = (90 - angle_deg) % 360
-    
     return angle_from_north
 
 
-# Calculate the angle relative to North for each animal and store in a 2D list
+# Run function for every animal; store results in list
+
 angles_from_north = [[angle_from_north(tail_points[i, j], neck_points[i, j]) for j in range(tail_points.shape[1])] for i in range(tail_points.shape[0])]
 
-# Print the results
+
+# Print results
+
 for i, animal_angles in enumerate(angles_from_north):
     for j, angle in enumerate(animal_angles):
-        print(f"Animal {i+1} in frame {j+10}: Angle relative to North in degrees: {angle:.2f}")
+        print(f"Animal {i+1} in frame {start_frame + j}: Angle relative to North in degrees: {angle:.1f}")
     print()
