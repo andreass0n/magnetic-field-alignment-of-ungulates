@@ -39,15 +39,15 @@ numpy_first_frame_num_03 = int((((video_last_frame_nums['01'] - video_first_fram
 if video_num == '01':
     start_frame = int((video_start_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate))
     end_frame = int((video_end_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate))
-    print(start_frame, end_frame)
+
 elif video_num == '02':
     start_frame = int(((video_start_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate)) + numpy_first_frame_num_02)
     end_frame = int(((video_end_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate)) + numpy_first_frame_num_02)
-    print(start_frame, end_frame)
+
 elif video_num == '03':
     start_frame = int(((video_start_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate)) + numpy_first_frame_num_03)
     end_frame = int(((video_end_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate)) + numpy_first_frame_num_03)
-    print(start_frame, end_frame)
+
 else:
     print('Incorrect video number')
 
@@ -81,7 +81,7 @@ for i, animal_angles in enumerate(angles_from_east):
 df = pd.DataFrame(data, columns=['observation', 'bout_id', 'behavior', 'species', 'individual_id', 'frame_num', 'orientation'])
 
 # Save DataFrame to excel file
-output_filename = 'orientation_data.xlsx'
+output_filename = 'excels/orientation_data.xlsx'
 if os.path.exists(output_filename):
     df_existing = pd.read_excel(output_filename, dtype=np.object_)
     df_combined = pd.concat([df_existing, df])
