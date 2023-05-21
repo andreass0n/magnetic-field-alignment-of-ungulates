@@ -16,20 +16,40 @@ import math
 # 9 = tip of tail (turqoise)
 
 # Defining parameters
-observation = '083'  
+observation = '088'
+video_num = '02'
 bout_id = observation + '.01'   # 01 = foraging, 02 = resting, 03 = reacting
 behavior = 'foraging'
 species = 'Grevys_zebra'
-video_start_time = 286          # Start time of segment in video (in seconds)
-video_end_time = 400            # End time of segment in video (in seconds)
-start_frame_num = 2576          # Start frame number of video (where numpy frame 0 corresponds to)
+video_start_time = 990          # Start time of segment in video (in seconds)
+video_end_time = 991            # End time of segment in video (in seconds)
 video_frame_rate = 60
 numpy_frame_rate = 30
 stepsize = 30                   # Only include every stepsize'th frame
 
-# Calculate corresponding start and end frames in numpy array of segment
-start_frame = int((video_start_time * video_frame_rate - start_frame_num) / (video_frame_rate / numpy_frame_rate))
-end_frame = int((video_end_time * video_frame_rate - start_frame_num) / (video_frame_rate / numpy_frame_rate))
+# First and last frame numbers in the videos
+video_first_frame_nums = {'01': 6246, '02': 7624, '03': 11228}
+video_last_frame_nums = {'01': 67127, '02': 70995, '03': 68437}
+
+# Calculate offset for second and third videos
+numpy_first_frame_num_02 = int(((video_last_frame_nums['01'] - video_first_frame_nums['01']) / (video_frame_rate / numpy_frame_rate)) + 1)
+numpy_first_frame_num_03 = int((((video_last_frame_nums['01'] - video_first_frame_nums['01']) + (video_last_frame_nums['02'] - video_first_frame_nums['02'])) / (video_frame_rate / numpy_frame_rate)) + 1)
+
+# Calculate start and end frames based on what video is specified
+if video_num == '01':
+    start_frame = int((video_start_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate))
+    end_frame = int((video_end_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate))
+    print(start_frame, end_frame)
+elif video_num == '02':
+    start_frame = int(((video_start_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate)) + numpy_first_frame_num_02)
+    end_frame = int(((video_end_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate)) + numpy_first_frame_num_02)
+    print(start_frame, end_frame)
+elif video_num == '03':
+    start_frame = int(((video_start_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate)) + numpy_first_frame_num_03)
+    end_frame = int(((video_end_time * video_frame_rate - video_first_frame_nums[video_num]) / (video_frame_rate / numpy_frame_rate)) + numpy_first_frame_num_03)
+    print(start_frame, end_frame)
+else:
+    print('Incorrect video number')
 
 # Load posture data
 postures = np.load(f'posture_data_utms/observation{observation}-postures.npy')
@@ -55,13 +75,13 @@ for i, animal_angles in enumerate(angles_from_east):
             numpy_frame_num = start_frame + j * stepsize
             frame_num = observation + '-' + str(numpy_frame_num)
             individual_id = observation + '-' + str(i)
-            data.append([observation, bout_id, behavior, species, individual_id, frame_num, angle])
+            data.append([observation + '-' + video_num, bout_id, behavior, species, individual_id, frame_num, angle])
 
 # Create dataframe
 df = pd.DataFrame(data, columns=['observation', 'bout_id', 'behavior', 'species', 'individual_id', 'frame_num', 'orientation'])
 
 # Save DataFrame to excel file
-output_filename = 'behavior_data.xlsx'
+output_filename = 'orientation_data.xlsx'
 if os.path.exists(output_filename):
     df_existing = pd.read_excel(output_filename, dtype=np.object_)
     df_combined = pd.concat([df_existing, df])
